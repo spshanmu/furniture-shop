@@ -1,74 +1,73 @@
-import { useNavigate } from "react-router-dom";
-
 function InspirationSection() {
-  const navigate = useNavigate();
   return (
-    <section className="inspiration-section py-5">
-
+    <section className="furniro-furniture">
       <div className="container">
 
-        <div className="row align-items-center g-5">
+        <div className="furniro-furniture-heading">
+          <p>Share your setup with</p>
+          <h2>#FurniroFurniture</h2>
+        </div>
 
-          {/* Left Content */}
-          <div className="col-lg-5">
+        <div className="furniro-furniture-grid">
 
-            <h2 className="fw-bold display-6">
-              50+ Beautiful Rooms
-              <br />
-              Inspiration
-            </h2>
-
-            <p className="text-muted mt-3">
-              Our designer already created a lot of beautiful
-              prototypes of rooms that inspire you.
-            </p>
-
-            <button
-              className="btn btn-warning px-4 py-3 mt-3 fw-bold"
-              onClick={() => navigate("/shop")}
-            >
-              Explore More
-            </button>
-
+          <div className="furniro-img img-1">
+            <img
+              src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace"
+              alt="Furniture setup"
+            />
           </div>
 
-          {/* Right Images */}
-          <div className="col-lg-7">
+          <div className="furniro-img img-2">
+            <img
+              src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0"
+              alt="Furniture setup"
+            />
+          </div>
 
-            <div className="row g-3">
+          <div className="furniro-img img-3">
+            <img
+              src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6"
+              alt="Furniture setup"
+            />
+          </div>
 
-              <div className="col-12 col-md-7">
-                <img
-                  src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d"
-                  alt="Modern living room"
-                  className="img-fluid inspiration-main-image"
-                />
-              </div>
+          <div className="furniro-img img-4">
+            <img
+              src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc"
+              alt="Furniture setup"
+            />
+          </div>
 
-              <div className="col-12 col-md-5">
+          <div className="furniro-img img-5">
+            <img
+              src="https://images.unsplash.com/photo-1550254478-ead40cc54513"
+              alt="Furniture setup"
+            />
+          </div>
 
-                <img
-                  src="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3"
-                  alt="Beautiful interior"
-                  className="img-fluid inspiration-small-image mb-3"
-                />
+          <div className="furniro-img img-6">
+            <img
+              src="https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e"
+              alt="Furniture setup"
+            />
+          </div>
 
-                <img
-                  src="https://images.unsplash.com/photo-1618220179428-22790b461013"
-                  alt="Modern furniture"
-                  className="img-fluid inspiration-small-image"
-                />
+          <div className="furniro-img img-7">
+            <img
+              src="https://images.unsplash.com/photo-1567016432779-094069958ea5"
+              alt="Furniture setup"
+            />
+          </div>
 
-              </div>
-
-            </div>
-
+          <div className="furniro-img img-8">
+            <img
+              src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7"
+              alt="Furniture setup"
+            />
           </div>
 
         </div>
-
       </div>
-
     </section>
   );
 }

@@ -1,4 +1,7 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { FaStar, FaStarHalfAlt } from "react-icons/fa";
+import { FiMinus, FiPlus } from "react-icons/fi";
 import products from "../data/products";
 
 function ProductDetails({ addToCart }) {
@@ -9,215 +12,474 @@ function ProductDetails({ addToCart }) {
     (item) => item.id === Number(id)
   );
 
+  const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState("L");
+  const [selectedColor, setSelectedColor] = useState("Purple");
+  const [selectedImage, setSelectedImage] = useState("");
+
+  useEffect(() => {
+    if (product) {
+      setQuantity(1);
+      setSelectedSize("L");
+      setSelectedColor("Purple");
+      setSelectedImage(product.image);
+    }
+  }, [product]);
+
   if (!product) {
     return (
-      <section className="py-5">
-        <div className="container text-center">
-          <h2>Product Not Found</h2>
+      <section className="pd-not-found">
+        <h2>Product Not Found</h2>
 
-          <button
-            className="btn btn-warning mt-3"
-            onClick={() => navigate("/shop")}
-          >
-            BACK TO SHOP
-          </button>
-        </div>
+        <button onClick={() => navigate("/shop")}>
+          Back to Shop
+        </button>
       </section>
     );
   }
 
-  const visualRating =
-    Math.floor(product.rating) +
-    (product.rating % 1 >= 0.5 ? 0.5 : 0);
+  const increaseQuantity = () => {
+    setQuantity((previous) => previous + 1);
+  };
+
+  const decreaseQuantity = () => {
+    setQuantity((previous) =>
+      Math.max(1, previous - 1)
+    );
+  };
+
+  const handleAddToCart = () => {
+    const selectedProduct = {
+      ...product,
+      selectedSize,
+      selectedColor,
+    };
+
+    for (let i = 0; i < quantity; i++) {
+      addToCart(selectedProduct);
+    }
+
+    alert(`${product.name} added to cart!`);
+  };
+
+  const handleCompare = () => {
+    const savedComparison =
+      JSON.parse(
+        localStorage.getItem("furniroComparison")
+      ) || [];
+
+    const alreadyAdded = savedComparison.some(
+      (item) => item.id === product.id
+    );
+
+    let updatedComparison = savedComparison;
+
+    if (!alreadyAdded) {
+      updatedComparison = [
+        ...savedComparison,
+        product,
+      ];
+    }
+
+    updatedComparison = updatedComparison.slice(-3);
+
+    localStorage.setItem(
+      "furniroComparison",
+      JSON.stringify(updatedComparison)
+    );
+
+    navigate("/comparison");
+  };
+
+  const renderStars = () => {
+    const stars = [];
+
+    for (let i = 1; i <= 5; i++) {
+      if (product.rating >= i) {
+        stars.push(
+          <FaStar
+            key={i}
+            className="pd-star"
+          />
+        );
+      } else if (product.rating >= i - 0.5) {
+        stars.push(
+          <FaStarHalfAlt
+            key={i}
+            className="pd-star"
+          />
+        );
+      } else {
+        stars.push(
+          <FaStar
+            key={i}
+            className="pd-empty-star"
+          />
+        );
+      }
+    }
+
+    return stars;
+  };
+
+  const thumbnailImages = [
+    product.image,
+    product.image,
+    product.image,
+    product.image,
+  ];
 
   return (
-    <section className="py-5">
-      <div className="container">
+    <section className="pd-page">
 
-        <div className="row g-5">
+      {/* BREADCRUMB */}
 
-          {/* Product Image */}
+      <div className="pd-breadcrumb">
 
-          <div className="col-12 col-md-6">
+        <span onClick={() => navigate("/")}>
+          Home
+        </span>
+
+        <span>›</span>
+
+        <span onClick={() => navigate("/shop")}>
+          Shop
+        </span>
+
+        <span>›</span>
+
+        <span className="pd-breadcrumb-product">
+          {product.name}
+        </span>
+
+      </div>
+
+      {/* MAIN PRODUCT AREA */}
+
+      <div className="pd-container">
+
+        {/* LEFT SIDE */}
+
+        <div className="pd-left">
+
+          {/* THUMBNAILS */}
+
+          <div className="pd-thumbnails">
+
+            {thumbnailImages.map(
+              (image, index) => (
+                <button
+                  key={index}
+                  className={`pd-thumbnail ${
+                    selectedImage === image
+                      ? "active"
+                      : ""
+                  }`}
+                  onClick={() =>
+                    setSelectedImage(image)
+                  }
+                >
+                  <img
+                    src={image}
+                    alt={`${product.name} ${
+                      index + 1
+                    }`}
+                  />
+                </button>
+              )
+            )}
+
+          </div>
+
+          {/* MAIN IMAGE */}
+
+          <div className="pd-main-image-wrapper">
 
             <img
-              src={product.image}
+              src={selectedImage || product.image}
               alt={product.name}
-              className="product-details-image"
-              onError={(e) => {
-                e.currentTarget.src =
-                  "https://placehold.co/600x600?text=No+Image";
-              }}
+              className="pd-main-image"
             />
 
           </div>
 
+        </div>
 
-          {/* Product Information */}
+        {/* RIGHT SIDE */}
 
-          <div className="col-12 col-md-6">
+        <div className="pd-information">
 
-            <h1 className="fw-bold">
-              {product.name}
-            </h1>
+          <h1 className="pd-product-name">
+            {product.name}
+          </h1>
 
+          <div className="pd-price">
+            {product.price}
+          </div>
 
-            {/* Rating */}
+          {/* RATING */}
 
-            <div className="product-details-rating mb-3">
+          <div className="pd-rating-row">
 
-              <span className="details-rating-stars">
-
-                <span className="details-empty-stars">
-                  ★★★★★
-                </span>
-
-                <span
-                  className="details-filled-stars"
-                  style={{
-                    width: `${visualRating * 20}%`
-                  }}
-                >
-                  ★★★★★
-                </span>
-
-              </span>
-
-              <span className="ms-2 text-muted">
-                {product.rating} / 5
-              </span>
-
-              <span className="ms-2 text-muted">
-                ({product.reviews} reviews)
-              </span>
-
+            <div className="pd-stars">
+              {renderStars()}
             </div>
 
+            <span className="pd-rating-number">
+              {product.rating}
+            </span>
 
-            {/* Price */}
+            <span className="pd-review-divider">
+              |
+            </span>
 
-            <h3 className="fw-bold mb-2">
-              {product.price}
-            </h3>
+            <span className="pd-reviews">
+              {product.reviews} Customer Reviews
+            </span>
 
+          </div>
 
-            {/* Old Price */}
+          {/* DESCRIPTION */}
 
-            {product.oldPrice && (
-              <p className="text-muted text-decoration-line-through mb-2">
-                {product.oldPrice}
-              </p>
-            )}
+          <p className="pd-description">
+            {product.description}
+          </p>
 
+          {/* SIZE */}
 
-            {/* Discount */}
+          <div className="pd-option-group">
 
-            {product.discount && (
-              <span className="badge bg-danger mb-3">
-                {product.discount}
-              </span>
-            )}
+            <h4>Size</h4>
 
+            <div className="pd-size-options">
 
-            {/* Category */}
-
-            <p className="mt-3">
-              Category:{" "}
-              <strong>{product.category}</strong>
-            </p>
-
-
-            {/* Short Description */}
-
-            <p className="text-muted fs-5 mt-3">
-              {product.description}
-            </p>
-
-
-            {/* Buttons */}
-
-            <div className="mt-4">
-
-              <button
-                className="btn btn-dark px-4 py-3"
-                onClick={() => {
-                  addToCart(product);
-                  navigate("/cart");
-                }}
-              >
-                ADD TO CART
-              </button>
-
-              <button
-                className="btn btn-outline-secondary px-4 py-3 ms-2"
-                onClick={() => navigate("/shop")}
-              >
-                CONTINUE SHOPPING
-              </button>
+              {["L", "XL", "XS"].map(
+                (size) => (
+                  <button
+                    key={size}
+                    className={`pd-size-button ${
+                      selectedSize === size
+                        ? "selected"
+                        : ""
+                    }`}
+                    onClick={() =>
+                      setSelectedSize(size)
+                    }
+                  >
+                    {size}
+                  </button>
+                )
+              )}
 
             </div>
 
           </div>
 
-        </div>
+          {/* COLOR */}
 
+          <div className="pd-option-group">
 
-        {/* Detailed Description Section */}
+            <h4>Color</h4>
 
-        <div className="row mt-5">
+            <div className="pd-color-options">
 
-          <div className="col-12">
+              <button
+                className={`pd-color-button pd-purple ${
+                  selectedColor === "Purple"
+                    ? "selected"
+                    : ""
+                }`}
+                aria-label="Purple"
+                title="Purple"
+                onClick={() =>
+                  setSelectedColor("Purple")
+                }
+              />
 
-            <hr />
+              <button
+                className={`pd-color-button pd-black ${
+                  selectedColor === "Black"
+                    ? "selected"
+                    : ""
+                }`}
+                aria-label="Black"
+                title="Black"
+                onClick={() =>
+                  setSelectedColor("Black")
+                }
+              />
 
-            <h3 className="fw-bold mt-4">
-              Product Description
-            </h3>
+              <button
+                className={`pd-color-button pd-gold ${
+                  selectedColor === "Gold"
+                    ? "selected"
+                    : ""
+                }`}
+                aria-label="Gold"
+                title="Gold"
+                onClick={() =>
+                  setSelectedColor("Gold")
+                }
+              />
 
-            <p className="text-muted mt-3">
-              {product.description}
+            </div>
+
+            <p className="pd-selected-color">
+              Selected Color:{" "}
+              <strong>{selectedColor}</strong>
             </p>
 
           </div>
 
+          {/* ACTION BUTTONS */}
+
+          <div className="pd-action-row">
+
+            {/* QUANTITY */}
+
+            <div className="pd-quantity">
+
+              <button
+                onClick={decreaseQuantity}
+                aria-label="Decrease quantity"
+              >
+                <FiMinus />
+              </button>
+
+              <span>{quantity}</span>
+
+              <button
+                onClick={increaseQuantity}
+                aria-label="Increase quantity"
+              >
+                <FiPlus />
+              </button>
+
+            </div>
+
+            {/* ADD TO CART */}
+
+            <button
+              className="pd-add-cart"
+              onClick={handleAddToCart}
+            >
+              Add To Cart
+            </button>
+
+            {/* COMPARE */}
+
+            <button
+              className="pd-compare"
+              onClick={handleCompare}
+            >
+              + Compare
+            </button>
+
+          </div>
+
+          {/* EXTRA INFORMATION */}
+
+          <div className="pd-extra-info">
+
+            <div>
+              <span>SKU</span>
+              <span>:</span>
+              <strong>
+                FURN-
+                {String(product.id).padStart(
+                  3,
+                  "0"
+                )}
+              </strong>
+            </div>
+
+            <div>
+              <span>Category</span>
+              <span>:</span>
+              <strong>
+                {product.category}
+              </strong>
+            </div>
+
+            <div>
+              <span>Color</span>
+              <span>:</span>
+              <strong>
+                {selectedColor}
+              </strong>
+            </div>
+
+            <div>
+              <span>Size</span>
+              <span>:</span>
+              <strong>
+                {selectedSize}
+              </strong>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      {/* BOTTOM DESCRIPTION */}
+
+      <div className="pd-bottom-section">
+
+        <div className="pd-tabs">
+
+          <button className="active">
+            Description
+          </button>
+
+          <button>
+            Additional Information
+          </button>
+
+          <button>
+            Reviews [{product.reviews}]
+          </button>
+
         </div>
 
+        <div className="pd-bottom-content">
 
-        {/* Product Details Section */}
+          <h3>{product.name}</h3>
 
-        <div className="row mt-4">
+          <p>{product.description}</p>
 
-          <div className="col-12 col-md-6">
+          <p>
+            This product belongs to our{" "}
+            <strong>
+              {product.category}
+            </strong>{" "}
+            collection and is designed to
+            complement modern interior spaces.
+          </p>
 
-            <h4 className="fw-bold">
-              Product Details
-            </h4>
+          <div className="pd-selected-details">
 
-            <ul className="list-group mt-3">
+            <div>
+              <strong>Selected Color:</strong>{" "}
+              {selectedColor}
+            </div>
 
-              <li className="list-group-item">
-                <strong>Product:</strong> {product.name}
-              </li>
+            <div>
+              <strong>Selected Size:</strong>{" "}
+              {selectedSize}
+            </div>
 
-              <li className="list-group-item">
-                <strong>Category:</strong> {product.category}
-              </li>
-
-              <li className="list-group-item">
-                <strong>Rating:</strong> {product.rating} / 5
-              </li>
-
-              <li className="list-group-item">
-                <strong>Price:</strong> {product.price}
-              </li>
-
-            </ul>
+            <div>
+              <strong>Quantity:</strong>{" "}
+              {quantity}
+            </div>
 
           </div>
 
         </div>
 
       </div>
+
     </section>
   );
 }

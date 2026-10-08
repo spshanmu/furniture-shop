@@ -1,249 +1,517 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import ProductCard from "../components/ProductCard";
 import products from "../data/products";
+import ProductCard from "../components/ProductCard";
 
 function Shop({
   addToCart,
   wishlist,
-  toggleWishlist
+  toggleWishlist,
 }) {
   const [searchParams] = useSearchParams();
 
-  const searchText =
+  const searchQuery =
     searchParams.get("search") || "";
 
-  const urlCategory =
-    searchParams.get("category") || "";
+  const categoryQuery =
+    searchParams.get("category") || "All";
+
+  const [currentPage, setCurrentPage] =
+    useState(1);
 
   const [selectedCategory, setSelectedCategory] =
-    useState(urlCategory);
+    useState(categoryQuery);
 
-  const [sortOption, setSortOption] =
+  const [sortBy, setSortBy] =
     useState("default");
+
+  const productsPerPage = 4;
+
+  /* =========================================
+     CATEGORIES
+  ========================================= */
 
   const categories = [
     "All",
     "Dining",
     "Living",
-    "Bedroom"
+    "Bedroom",
   ];
 
-  // Filter products
-let filteredProducts = products.filter(
-  (product) => {
+  /* =========================================
+     FILTER + SEARCH PRODUCTS
+  ========================================= */
 
-    const searchValue = searchText.toLowerCase();
+  let filteredProducts = products.filter(
+    (product) => {
+      const matchesSearch =
+        product.name
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
 
-    const matchesSearch =
-      product.name
-        .toLowerCase()
-        .includes(searchValue) ||
+      const matchesCategory =
+        selectedCategory === "All" ||
+        product.category === selectedCategory;
 
-      product.description
-        .toLowerCase()
-        .includes(searchValue) ||
+      return (
+        matchesSearch &&
+        matchesCategory
+      );
+    }
+  );
 
-      product.category
-        .toLowerCase()
-        .includes(searchValue);
+  /* =========================================
+     SORT PRODUCTS
+  ========================================= */
 
-    const matchesCategory =
-      selectedCategory === "" ||
-      selectedCategory === "All" ||
-      product.category === selectedCategory;
+  if (sortBy === "price-low") {
+    filteredProducts = [
+      ...filteredProducts,
+    ].sort((a, b) => {
+      const priceA = Number(
+        a.price.replace(/[^\d]/g, "")
+      );
 
-    return (
-      matchesSearch &&
-      matchesCategory
-    );
-  }
-);
+      const priceB = Number(
+        b.price.replace(/[^\d]/g, "")
+      );
 
-  // Sort products
-  if (sortOption === "lowToHigh") {
-    filteredProducts.sort(
-      (a, b) =>
-        Number(
-          a.price.replace(/[^\d]/g, "")
-        ) -
-        Number(
-          b.price.replace(/[^\d]/g, "")
-        )
-    );
+      return priceA - priceB;
+    });
   }
 
-  if (sortOption === "highToLow") {
-    filteredProducts.sort(
-      (a, b) =>
-        Number(
-          b.price.replace(/[^\d]/g, "")
-        ) -
-        Number(
-          a.price.replace(/[^\d]/g, "")
-        )
+  if (sortBy === "price-high") {
+    filteredProducts = [
+      ...filteredProducts,
+    ].sort((a, b) => {
+      const priceA = Number(
+        a.price.replace(/[^\d]/g, "")
+      );
+
+      const priceB = Number(
+        b.price.replace(/[^\d]/g, "")
+      );
+
+      return priceB - priceA;
+    });
+  }
+
+  if (sortBy === "rating-high") {
+    filteredProducts = [
+      ...filteredProducts,
+    ].sort(
+      (a, b) => b.rating - a.rating
     );
   }
+
+  if (sortBy === "name") {
+    filteredProducts = [
+      ...filteredProducts,
+    ].sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+  }
+
+  /* =========================================
+     RESET PAGE WHEN FILTER / SEARCH / SORT
+     CHANGES
+  ========================================= */
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    searchQuery,
+    selectedCategory,
+    sortBy,
+  ]);
+
+  /* =========================================
+     PAGINATION
+  ========================================= */
+
+  const totalPages = Math.ceil(
+    filteredProducts.length /
+      productsPerPage
+  );
+
+  const startIndex =
+    (currentPage - 1) *
+    productsPerPage;
+
+  const endIndex =
+    startIndex + productsPerPage;
+
+  const currentProducts =
+    filteredProducts.slice(
+      startIndex,
+      endIndex
+    );
+
+  /* =========================================
+     PAGE CHANGE
+  ========================================= */
+
+  const goToPage = (page) => {
+    setCurrentPage(page);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      goToPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      goToPage(currentPage - 1);
+    }
+  };
+
+  /* =========================================
+     CATEGORY CHANGE
+  ========================================= */
+
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
+    setCurrentPage(1);
+  };
 
   return (
-    <section className="shop-section py-5">
+    <div className="shop-page">
 
-      <div className="container">
+      {/* =====================================
+          SHOP CONTENT
+      ===================================== */}
 
-        {/* Shop Heading */}
-        <div className="text-center mb-5">
+      <section className="shop-products-section">
 
-          <h1 className="fw-bold">
-            Shop
-          </h1>
+        <div className="container">
 
-          <p className="text-muted mt-2">
-            Explore our complete furniture collection.
-          </p>
+          {/* =================================
+              SEARCH RESULT
+          ================================= */}
 
-        </div>
+          {searchQuery && (
+            <div className="shop-search-result">
 
+              <h2>
+                Search Results for "
+                {searchQuery}"
+              </h2>
 
-        {/* FILTER SECTION */}
-        <div className="shop-filter-panel mb-5">
+              <p>
+                {filteredProducts.length}{" "}
+                product
+                {filteredProducts.length !== 1
+                  ? "s"
+                  : ""}{" "}
+                found
+              </p>
 
-          {/* Category Buttons */}
-          <div className="category-buttons">
+            </div>
+          )}
 
-            <h6 className="fw-bold mb-3">
-              Category
-            </h6>
+          {/* =================================
+              FILTER + SORT
+          ================================= */}
 
-            <div className="d-flex flex-wrap gap-2">
+          <div
+            style={{
+              display: "flex",
+              justifyContent:
+                "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "15px",
+              marginBottom: "30px",
+              padding: "20px",
+              backgroundColor:
+                "#f9f1e7",
+            }}
+          >
 
-              {categories.map((category) => {
+            {/* CATEGORY FILTER */}
 
-                const categoryValue =
-                  category === "All"
-                    ? ""
-                    : category;
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                flexWrap: "wrap",
+              }}
+            >
 
-                return (
+              <strong>
+                Filter:
+              </strong>
+
+              {categories.map(
+                (category) => (
                   <button
                     key={category}
                     type="button"
-                    className={
-                      selectedCategory === categoryValue
-                        ? "btn btn-dark"
-                        : "btn btn-outline-dark"
-                    }
                     onClick={() =>
-                      setSelectedCategory(categoryValue)
+                      handleCategoryChange(
+                        category
+                      )
                     }
+                    style={{
+                      border: "none",
+                      padding:
+                        "9px 16px",
+                      backgroundColor:
+                        selectedCategory ===
+                        category
+                          ? "#b88e2f"
+                          : "#ffffff",
+                      color:
+                        selectedCategory ===
+                        category
+                          ? "#ffffff"
+                          : "#333333",
+                      cursor:
+                        "pointer",
+                      borderRadius:
+                        "4px",
+                    }}
                   >
                     {category}
                   </button>
-                );
+                )
+              )}
 
-              })}
+            </div>
+
+            {/* SORT */}
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+              }}
+            >
+
+              <strong>
+                Sort By:
+              </strong>
+
+              <select
+                value={sortBy}
+                onChange={(e) =>
+                  setSortBy(
+                    e.target.value
+                  )
+                }
+                style={{
+                  padding:
+                    "9px 14px",
+                  border:
+                    "1px solid #ddd",
+                  backgroundColor:
+                    "#ffffff",
+                  cursor:
+                    "pointer",
+                  outline:
+                    "none",
+                }}
+              >
+
+                <option value="default">
+                  Default
+                </option>
+
+                <option value="price-low">
+                  Price: Low to High
+                </option>
+
+                <option value="price-high">
+                  Price: High to Low
+                </option>
+
+                <option value="rating-high">
+                  Rating: High to Low
+                </option>
+
+                <option value="name">
+                  Name: A to Z
+                </option>
+
+              </select>
 
             </div>
 
           </div>
 
+          {/* =================================
+              PRODUCT COUNT
+          ================================= */}
 
-          {/* Sort Dropdown */}
-          <div className="sort-section">
-
-            <label
-              htmlFor="sortProducts"
-              className="fw-bold d-block mb-2"
-            >
-              Sort by
-            </label>
-
-            <select
-              id="sortProducts"
-              className="form-select shop-sort-select"
-              value={sortOption}
-              onChange={(e) =>
-                setSortOption(e.target.value)
-              }
-            >
-
-              <option value="default">
-                Default
-              </option>
-
-              <option value="lowToHigh">
-                Price: Low to High
-              </option>
-
-              <option value="highToLow">
-                Price: High to Low
-              </option>
-
-            </select>
-
+          <div
+            style={{
+              marginBottom: "20px",
+              color: "#777",
+            }}
+          >
+            Showing{" "}
+            {filteredProducts.length === 0
+              ? 0
+              : startIndex + 1}
+            -
+            {Math.min(
+              endIndex,
+              filteredProducts.length
+            )}{" "}
+            of{" "}
+            {filteredProducts.length}{" "}
+            products
           </div>
+
+          {/* =================================
+              PRODUCTS
+          ================================= */}
+
+          {currentProducts.length > 0 ? (
+
+            <div className="row g-4">
+
+              {currentProducts.map(
+                (product) => (
+
+                  <div
+                    className="col-12 col-sm-6 col-lg-3"
+                    key={product.id}
+                  >
+
+                    <ProductCard
+                      product={product}
+                      addToCart={addToCart}
+                      wishlist={wishlist}
+                      toggleWishlist={
+                        toggleWishlist
+                      }
+                    />
+
+                  </div>
+
+                )
+              )}
+
+            </div>
+
+          ) : (
+
+            /* =================================
+               NO PRODUCTS
+            ================================= */
+
+            <div className="shop-no-products">
+
+              <h2>
+                No products found
+              </h2>
+
+              <p>
+                Try changing your filter,
+                search, or sort option.
+              </p>
+
+            </div>
+
+          )}
+
+          {/* =================================
+              PAGINATION
+          ================================= */}
+
+          {totalPages > 1 && (
+
+            <div className="shop-pagination">
+
+              {/* PREVIOUS */}
+
+              <button
+                className={
+                  currentPage === 1
+                    ? "pagination-button disabled"
+                    : "pagination-button"
+                }
+                disabled={
+                  currentPage === 1
+                }
+                onClick={
+                  goToPreviousPage
+                }
+              >
+                Prev
+              </button>
+
+              {/* PAGE NUMBERS */}
+
+              {Array.from(
+                {
+                  length: totalPages,
+                },
+                (_, index) => {
+
+                  const page =
+                    index + 1;
+
+                  return (
+                    <button
+                      key={page}
+                      className={
+                        currentPage ===
+                        page
+                          ? "pagination-button active"
+                          : "pagination-button"
+                      }
+                      onClick={() =>
+                        goToPage(page)
+                      }
+                    >
+                      {page}
+                    </button>
+                  );
+
+                }
+              )}
+
+              {/* NEXT */}
+
+              <button
+                className={
+                  currentPage ===
+                  totalPages
+                    ? "pagination-button disabled"
+                    : "pagination-button"
+                }
+                disabled={
+                  currentPage ===
+                  totalPages
+                }
+                onClick={
+                  goToNextPage
+                }
+              >
+                Next
+              </button>
+
+            </div>
+
+          )}
 
         </div>
 
+      </section>
 
-        {/* Search Result */}
-        {searchText && (
-          <p className="text-muted mb-4">
-            Search results for "{searchText}"
-          </p>
-        )}
-
-
-        {/* Product Count */}
-        <p className="text-muted mb-4">
-          Showing {filteredProducts.length} products
-        </p>
-
-
-        {/* Products */}
-        {filteredProducts.length > 0 ? (
-
-          <div className="row g-4">
-
-            {filteredProducts.map((product) => (
-
-              <div
-                className="col-12 col-sm-6 col-lg-3"
-                key={product.id}
-              >
-
-                <ProductCard
-                  product={product}
-                  addToCart={addToCart}
-                  wishlist={wishlist}
-                  toggleWishlist={toggleWishlist}
-                />
-
-              </div>
-
-            ))}
-
-          </div>
-
-        ) : (
-
-          <div className="text-center py-5">
-
-            <h4>
-              No products found
-            </h4>
-
-            <p className="text-muted">
-              Try another category or search term.
-            </p>
-
-          </div>
-
-        )}
-
-      </div>
-
-    </section>
+    </div>
   );
 }
 

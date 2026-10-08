@@ -1,14 +1,17 @@
 import Hero from "../components/Hero";
 import RangeSection from "../components/RangeSection";
-import ProductSection from "../components/ProductSection";
+import RoomInspiration from "../components/RoomInspiration";
 import InspirationSection from "../components/InspirationSection";
 
-function Home({ addToCart,  wishlist, toggleWishlist }) {
+function Home() {
   return (
     <>
       <Hero />
+
       <RangeSection />
-      <ProductSection addToCart={addToCart}  wishlist={wishlist} toggleWishlist={toggleWishlist}/>
+
+      <RoomInspiration />
+
       <InspirationSection />
     </>
   );

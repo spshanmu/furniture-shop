@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
+
 import {
   BrowserRouter,
   Routes,
-  Route
+  Route,
 } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import Features from "./components/Features";
 
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
@@ -23,76 +25,104 @@ import PrivacyPolicies from "./pages/PrivacyPolicies";
 import OrderHistory from "./pages/OrderHistory";
 import ProductDetails from "./pages/ProductDetails";
 import OrderDetails from "./pages/OrderDetails";
+import ProductComparison from "./pages/ProductComparison";
+
 
 function App() {
 
-  // ---------------- CART ----------------
+  // =====================================================
+  // CART
+  // =====================================================
 
   const [cart, setCart] = useState(() => {
+
     const savedCart =
       localStorage.getItem("furniroCart");
 
     return savedCart
       ? JSON.parse(savedCart)
       : [];
+
   });
 
 
-  // ---------------- WISHLIST ----------------
+  // =====================================================
+  // WISHLIST
+  // =====================================================
 
   const [wishlist, setWishlist] = useState(() => {
+
     const savedWishlist =
       localStorage.getItem("furniroWishlist");
 
     return savedWishlist
       ? JSON.parse(savedWishlist)
       : [];
+
   });
 
 
-  // ---------------- ORDERS ----------------
+  // =====================================================
+  // ORDERS
+  // =====================================================
 
   const [orders, setOrders] = useState(() => {
+
     const savedOrders =
       localStorage.getItem("furniroOrders");
 
     return savedOrders
       ? JSON.parse(savedOrders)
       : [];
+
   });
 
 
-  // ---------------- SAVE CART ----------------
+  // =====================================================
+  // SAVE CART
+  // =====================================================
 
   useEffect(() => {
+
     localStorage.setItem(
       "furniroCart",
       JSON.stringify(cart)
     );
+
   }, [cart]);
 
 
-  // ---------------- SAVE WISHLIST ----------------
+  // =====================================================
+  // SAVE WISHLIST
+  // =====================================================
 
   useEffect(() => {
+
     localStorage.setItem(
       "furniroWishlist",
       JSON.stringify(wishlist)
     );
+
   }, [wishlist]);
 
 
-  // ---------------- SAVE ORDERS ----------------
+  // =====================================================
+  // SAVE ORDERS
+  // =====================================================
 
   useEffect(() => {
+
     localStorage.setItem(
       "furniroOrders",
       JSON.stringify(orders)
     );
+
   }, [orders]);
 
 
-  // ---------------- CART COUNT ----------------
+  // =====================================================
+  // CART COUNT
+  // =====================================================
 
   const cartCount = cart.reduce(
     (total, item) =>
@@ -101,85 +131,117 @@ function App() {
   );
 
 
-  // ---------------- ADD TO CART ----------------
+  // =====================================================
+  // ADD TO CART
+  // =====================================================
 
   const addToCart = (product) => {
 
     setCart((prev) => {
 
-      const existingProduct = prev.find(
-        (item) =>
-          item.id === product.id
-      );
+      const existingProduct =
+        prev.find(
+          (item) =>
+            item.id === product.id
+        );
+
 
       if (existingProduct) {
 
         return prev.map((item) =>
+
           item.id === product.id
             ? {
                 ...item,
                 quantity:
-                  item.quantity + 1
+                  item.quantity + 1,
               }
             : item
+
         );
+
       }
+
 
       return [
         ...prev,
+
         {
           ...product,
-          quantity: 1
-        }
+          quantity: 1,
+        },
+
       ];
+
     });
+
   };
 
 
-  // ---------------- DECREASE QUANTITY ----------------
+  // =====================================================
+  // DECREASE QUANTITY
+  // =====================================================
 
   const decreaseQuantity = (productId) => {
 
     setCart((prev) =>
+
       prev
+
         .map((item) =>
+
           item.id === productId
             ? {
                 ...item,
                 quantity:
-                  item.quantity - 1
+                  item.quantity - 1,
               }
             : item
+
         )
+
         .filter(
           (item) =>
             item.quantity > 0
         )
+
     );
+
   };
 
 
-  // ---------------- REMOVE FROM CART ----------------
+  // =====================================================
+  // REMOVE FROM CART
+  // =====================================================
 
   const removeFromCart = (productId) => {
 
     setCart((prev) =>
+
       prev.filter(
         (item) =>
           item.id !== productId
       )
+
     );
+
   };
 
 
-  // ---------------- CLEAR CART ----------------
+  // =====================================================
+  // CLEAR CART
+  // =====================================================
 
   const clearCart = () => {
+
     setCart([]);
+
   };
 
 
-  // ---------------- WISHLIST ----------------
+  // =====================================================
+  // WISHLIST
+  // =====================================================
 
   const toggleWishlist = (product) => {
 
@@ -191,45 +253,70 @@ function App() {
             item.id === product.id
         );
 
+
       if (alreadyLiked) {
 
         return prev.filter(
           (item) =>
             item.id !== product.id
         );
+
       }
+
 
       return [
         ...prev,
-        product
+        product,
       ];
+
     });
+
   };
 
 
-  // ---------------- ADD ORDER ----------------
+  // =====================================================
+  // ADD ORDER
+  // =====================================================
 
   const addOrder = (order) => {
 
     setOrders((prev) => [
+
       order,
-      ...prev
+      ...prev,
+
     ]);
+
   };
 
+
+  // =====================================================
+  // APP
+  // =====================================================
 
   return (
 
     <BrowserRouter>
+
+      {/* =========================
+          NAVBAR
+      ========================= */}
 
       <Navbar
         cartCount={cartCount}
         wishlistCount={wishlist.length}
       />
 
+
+      {/* =========================
+          ALL PAGES
+      ========================= */}
+
       <Routes>
 
-        {/* HOME */}
+        {/* =========================
+            HOME
+        ========================= */}
 
         <Route
           path="/"
@@ -245,7 +332,9 @@ function App() {
         />
 
 
-        {/* SHOP */}
+        {/* =========================
+            SHOP
+        ========================= */}
 
         <Route
           path="/shop"
@@ -261,7 +350,9 @@ function App() {
         />
 
 
-        {/* PRODUCT DETAILS */}
+        {/* =========================
+            PRODUCT DETAILS
+        ========================= */}
 
         <Route
           path="/product/:id"
@@ -273,7 +364,23 @@ function App() {
         />
 
 
-        {/* WISHLIST */}
+        {/* =========================
+            PRODUCT COMPARISON
+        ========================= */}
+
+        <Route
+          path="/comparison"
+          element={
+            <ProductComparison
+              addToCart={addToCart}
+            />
+          }
+        />
+
+
+        {/* =========================
+            WISHLIST
+        ========================= */}
 
         <Route
           path="/wishlist"
@@ -289,7 +396,9 @@ function App() {
         />
 
 
-        {/* ABOUT */}
+        {/* =========================
+            ABOUT
+        ========================= */}
 
         <Route
           path="/about"
@@ -297,7 +406,9 @@ function App() {
         />
 
 
-        {/* CONTACT */}
+        {/* =========================
+            CONTACT
+        ========================= */}
 
         <Route
           path="/contact"
@@ -305,7 +416,9 @@ function App() {
         />
 
 
-        {/* CART */}
+        {/* =========================
+            CART
+        ========================= */}
 
         <Route
           path="/cart"
@@ -327,7 +440,9 @@ function App() {
         />
 
 
-        {/* CHECKOUT */}
+        {/* =========================
+            CHECKOUT
+        ========================= */}
 
         <Route
           path="/checkout"
@@ -341,7 +456,9 @@ function App() {
         />
 
 
-        {/* PROFILE */}
+        {/* =========================
+            PROFILE
+        ========================= */}
 
         <Route
           path="/profile"
@@ -349,7 +466,9 @@ function App() {
         />
 
 
-        {/* ORDER HISTORY */}
+        {/* =========================
+            ORDER HISTORY
+        ========================= */}
 
         <Route
           path="/orders"
@@ -361,42 +480,9 @@ function App() {
         />
 
 
-        {/* PAYMENT OPTIONS */}
-
-        <Route
-          path="/payment-options"
-          element={
-            <PaymentOptions />
-          }
-        />
-
-
-        {/* RETURNS */}
-
-        <Route
-          path="/returns"
-          element={
-            <Returns />
-          }
-        />
-
-
-        {/* PRIVACY POLICIES */}
-
-        <Route
-          path="/privacy-policies"
-          element={
-            <PrivacyPolicies />
-          }
-        />
-
-
-        {/* 404 */}
-
-        <Route
-          path="*"
-          element={<NotFound />}
-        />
+        {/* =========================
+            ORDER DETAILS
+        ========================= */}
 
         <Route
           path="/orders/:id"
@@ -407,11 +493,70 @@ function App() {
           }
         />
 
+
+        {/* =========================
+            PAYMENT OPTIONS
+        ========================= */}
+
+        <Route
+          path="/payment-options"
+          element={
+            <PaymentOptions />
+          }
+        />
+
+
+        {/* =========================
+            RETURNS
+        ========================= */}
+
+        <Route
+          path="/returns"
+          element={
+            <Returns />
+          }
+        />
+
+
+        {/* =========================
+            PRIVACY POLICIES
+        ========================= */}
+
+        <Route
+          path="/privacy-policies"
+          element={
+            <PrivacyPolicies />
+          }
+        />
+
+
+        {/* =========================
+            404
+        ========================= */}
+
+        <Route
+          path="*"
+          element={<NotFound />}
+        />
+
       </Routes>
+
+
+      {/* =========================
+          COMMON FEATURES
+      ========================= */}
+
+      <Features />
+
+
+      {/* =========================
+          COMMON FOOTER
+      ========================= */}
 
       <Footer />
 
     </BrowserRouter>
+
   );
 }
 
